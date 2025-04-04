@@ -58,7 +58,7 @@ nixos-generate-config --root /mnt
 CONFIG_FILE="/mnt/etc/nixos/configuration.nix"
 if ! grep -q 'boot.loader.grub.devices' "$CONFIG_FILE"; then
     echo '✅ Adding boot.loader.grub.devices to configuration.nix'
-    sed -i '/boot.loader.grub.enable = true;/a \  boot.loader.grub.devices = [ "/dev/sda" ];' "$CONFIG_FILE"
+    sed -i '/boot.loader.grub.enable = true;/a \  boot.loader.grub.devices = [ "/dev/sda1" ];' "$CONFIG_FILE"
 fi
 
 echo "🎉 Disk is partitioned, mounted, and ready for installation!"
