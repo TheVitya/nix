@@ -1,50 +1,60 @@
 #!/bin/bash
 set -euo pipefail
 
-# Set the target disk
+# 🧱 Set the target disk
 disk=/dev/sda
 
-echo "WARNING: This will wipe all data on $disk"
+# ⚠️ Prompt the user to confirm before wiping the disk
+echo "⚠️  WARNING: This will wipe all data on $disk"
 read -rp "Are you sure you want to continue? [y/N] " confirm
 [[ "$confirm" == "y" || "$confirm" == "Y" ]] || exit 1
 
-# Unmount if mounted
+# 🔌 Unmount anything already mounted at /mnt and disable swap
 umount -R /mnt || true
-swapoff ${disk}2 || true
+swapoff "${disk}2" || true
 
-# Zap all partition data (MBR + GPT)
-sgdisk --zap-all $disk
-wipefs -a $disk
+# 💣 Completely erase all partition data (MBR + GPT)
+sgdisk --zap-all "$disk"
+wipefs -a "$disk"
 
-# Optionally clear the first few MiB just to be sure
-dd if=/dev/zero of=$disk bs=1M count=10 conv=fsync
+# 🧼 Zero out the first 10MiB for good measure
+dd if=/dev/zero of="$disk" bs=1M count=10 conv=fsync
 
-echo "Disk $disk has been wiped."
+echo "✅ Disk $disk has been wiped."
 
-# 1. Wipe and create a new GPT partition table
-sudo parted --script $disk mklabel gpt
+# 📐 Create new GPT partition table and define three partitions:
+#   1. EFI System Partition (100MiB)
+#   2. Linux swap (512MiB)
+#   3. Root ext4 partition (remaining space)
+parted -s "$disk" \
+  mklabel gpt \
+  mkpart ESP fat32 1MiB 101MiB \
+  set 1 esp on \
+  mkpart primary linux-swap 101MiB 613MiB \
+  mkpart primary ext4 613MiB 100%
 
-# 2. Create partitions:
-#    - 100MiB EFI System Partition
-#    - 512MiB Linux Swap
-#    - Rest for Linux filesystem (label: nixos)
-sudo parted --script $disk mkpart primary fat32 1MiB 101MiB
-sudo parted --script $disk set 1 esp on
-sudo parted --script $disk mkpart primary linux-swap 101MiB 613MiB
-sudo parted --script $disk mkpart primary ext4 613MiB 100%
+# 🕒 Wait briefly for the kernel to register new partitions
+sleep 2
 
-# 3. Format partitions with appropriate labels
-sudo mkfs.fat -F32 -n boot ${disk}1       # EFI System Partition
-sudo mkswap -L swap ${disk}2              # Swap Partition
-sudo mkfs.ext4 -L nixos ${disk}3          # Root Partition
+# 🏗️ Format the new partitions with appropriate labels and filesystems
+mkfs.fat -F32 -n boot "${disk}1"     # EFI partition (vfat)
+mkswap -L swap "${disk}2"           # Swap partition
+mkfs.ext4 -L nixos "${disk}3"       # Root partition
 
-# 4. Mount root and EFI partitions
-sudo mount /dev/disk/by-label/nixos /mnt
-sudo mkdir -p /mnt/boot
-sudo mount /dev/disk/by-label/boot /mnt/boot
+# 📦 Mount partitions for NixOS installation
+mount /dev/disk/by-label/nixos /mnt
+mkdir -p /mnt/boot
+mount /dev/disk/by-label/boot /mnt/boot
+swapon "${disk}2"
 
-# 5. Enable swap
-sudo swapon ${disk}2
+# 🛠️ Generate the initial NixOS config files in /mnt/etc/nixos
+nixos-generate-config --root /mnt
 
-# 6. Generate NixOS config
-sudo nixos-generate-config --root /mnt
+# 📝 Patch the config to make the system bootable by specifying the GRUB device
+CONFIG_FILE="/mnt/etc/nixos/configuration.nix"
+if ! grep -q 'boot.loader.grub.devices' "$CONFIG_FILE"; then
+    echo '✅ Adding boot.loader.grub.devices to configuration.nix'
+    sed -i '/boot.loader.grub.enable = true;/a \  boot.loader.grub.devices = [ "/dev/sda" ];' "$CONFIG_FILE"
+fi
+
+echo "🎉 Disk is partitioned, mounted, and ready for installation!"
