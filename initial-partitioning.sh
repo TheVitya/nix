@@ -96,4 +96,4 @@ echo '
 
 nixos-install --no-root-passwd
 
-poweroff
+# poweroff
