@@ -61,11 +61,11 @@ if ! grep -q 'boot.loader.grub.devices' "$CONFIG_FILE"; then
     sed -i '/boot.loader.grub.enable = true;/a \  boot.loader.grub.devices = [ "/dev/sda" ];' "$CONFIG_FILE"
 fi
 
-# Define your public SSH key here
+# 📝 Define your public SSH key here
 SSH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpqUlEzSQKT9z7IM1QNZIogzQQecrFGkUOxltJIfGqGoRrMTPqTkAidoLM9iw9Xsb7JAx2PUk0pVS4SXKO7cNJjv/Ty3eldqJKtHOd6rZiDnRvMunYzR7MjExg/BscR+VUyY0V+dDOC1ljJMAjP/CEXug21OEv9l1gNtxOx+NCJqDJNpkcCweoyBheVuzbOF6pwSWwEa3OYi7llc+g2/Xt89Sx4bfeRavN5lmVyJrR9PXmrE2hSLJP3XxVPhpIkiDNff4aODLZQsaXIKn7J8j2tGLtBN5cWACGrAkyM8RG2L799oUFudRN5LuJ+Cl13qXc7rTbKpnB5+nf9geUHkHr4ebVURLY5s/p03+5F1Ni8ZpSGcj7e1/ZDNrupPek3wFgfqYpq4GKjC90Q0LI/99Pgz9Ple/hy4XYXzrRXlpCD6p70WIY2A63oJkZvG6hAXd/l0jG5H5oZT3ELvMEyX1sKmcscGCFkGhv89XwvkYxXFtIKWWvuJsFseuP7ovpRk0= viktornagy@Viktors-MacBook-Pro.local"
 
 # Inject SSH and user setup into configuration.nix (before the closing brace)
-# We use 'sed' to add the configuration just before the last closing brace '}'.
+echo '✅ Adding SSH configuration to configuration.nix'
 sed -i '/}/i \
 \
 # Enable SSH\n\
