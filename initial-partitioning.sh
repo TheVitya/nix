@@ -66,20 +66,20 @@ SSH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpqUlEzSQKT9z7IM1QNZIogzQQecrFGkU
 
 # Inject SSH and user setup into configuration.nix (before the closing brace)
 echo '✅ Adding SSH configuration to configuration.nix'
-sed -i ':a;N;$!ba;s/}/\\
+sed -i ':a;N;$!ba;s/\(.*\)}/\1 \\
 # Enable SSH \\
 services.openssh.enable = true; \\
 services.openssh.passwordAuthentication = false; \\
 \\
 # Set up the user \\
 users.users.viktor = { \\
-isNormalUser = true; \\
-description = "Viktor"; \\
-extraGroups = [ "wheel" ]; \\
-shell = pkgs.zsh; \\
-openssh.authorizedKeys.keys = [ \\
-"$SSH_KEY" \\
-]; \\
+  isNormalUser = true; \\
+  description = "Viktor"; \\
+  extraGroups = [ "wheel" ]; \\
+  shell = pkgs.zsh; \\
+  openssh.authorizedKeys.keys = [ \\
+    "$SSH_KEY" \\
+  ]; \\
 }; \\
 \\
 # Allow sudo without password (optional, be cautious) \\
