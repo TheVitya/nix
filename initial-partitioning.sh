@@ -1,5 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 # Set the target disk
 disk=/dev/sda
+
+echo "WARNING: This will wipe all data on $disk"
+read -rp "Are you sure you want to continue? [y/N] " confirm
+[[ "$confirm" == "y" || "$confirm" == "Y" ]] || exit 1
+
+# Unmount if mounted
+umount -R /mnt || true
+swapoff ${disk}2 || true
+
+# Zap all partition data (MBR + GPT)
+sgdisk --zap-all $disk
+wipefs -a $disk
+
+# Optionally clear the first few MiB just to be sure
+dd if=/dev/zero of=$disk bs=1M count=10 conv=fsync
+
+echo "Disk $disk has been wiped."
 
 # 1. Wipe and create a new GPT partition table
 sudo parted --script $disk mklabel gpt
