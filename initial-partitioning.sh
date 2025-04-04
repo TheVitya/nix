@@ -62,11 +62,11 @@ sed -i -E 's:^\}\s*$::g' $CONFIG_FILE
 
 # Extend/override default `configuration.nix`:
 echo '
-  boot.loader.grub.devices = [ "/dev/sda" ];
+  boot.loader.grub.devices = [ "'"$disk"'" ];
 
   # Initial empty root password for easy login:
   users.users.root.initialHashedPassword = "";
-  services.openssh.permitRootLogin = "prohibit-password";
+  services.openssh.settings.PermitRootLogin = "prohibit-password";
 
   services.openssh.enable = true;
 
@@ -78,6 +78,7 @@ echo '
 ' >> $CONFIG_FILE
 
 echo "🎉 Disk is partitioned, mounted, and ready for installation!"
+echo "🎉 Installing..."
 
 nixos-install --no-root-passwd
 
