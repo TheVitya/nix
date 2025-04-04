@@ -6,8 +6,12 @@ disk=/dev/sda
 
 # ⚠️ Prompt the user to confirm before wiping the disk
 echo "⚠️  WARNING: This will wipe all data on $disk"
-read -rp "Are you sure you want to continue? [y/N] " confirm
-[[ "$confirm" == "y" || "$confirm" == "Y" ]] || exit 1
+read -r -p "Are you sure you want to continue? Type YES to proceed: " confirm
+confirm="${confirm:-}"
+if [[ "$confirm" != "YES" ]]; then
+  echo "Aborted."
+  exit 1
+fi
 
 # 🔌 Unmount anything already mounted at /mnt and disable swap
 umount -R /mnt || true
