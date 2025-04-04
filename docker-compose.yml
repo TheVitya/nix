@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  nix:
+    image: nixos/nix
+    container_name: nix_dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    environment:
+      - NIX_CONFIG=experimental-features = nix-command flakes
