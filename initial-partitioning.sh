@@ -49,6 +49,8 @@ mkfs.ext4 -L nixos "${disk}3"       # Root partition
 mount /dev/disk/by-label/nixos /mnt
 mkdir -p /mnt/boot
 mount /dev/disk/by-label/boot /mnt/boot
+mkdir -p /mnt/boot/efi
+mount /dev/disk/by-label/boot /mnt/boot/efi
 swapon "${disk}2"
 
 # 🛠️ Generate the initial NixOS config files in /mnt/etc/nixos
@@ -58,7 +60,7 @@ nixos-generate-config --root /mnt
 CONFIG_FILE="/mnt/etc/nixos/configuration.nix"
 if ! grep -q 'boot.loader.grub.devices' "$CONFIG_FILE"; then
     echo '✅ Adding boot.loader.grub.devices to configuration.nix'
-    sed -i '/boot.loader.grub.enable = true;/a \  boot.loader.grub.devices = [ "/dev/sda" ];' "$CONFIG_FILE"
+    sed -i '/boot.loader.grub.enable = true;/a \ boot.loader.grub.efiSupport = true; \  boot.loader.grub.devices = [ "/dev/sda" ];' "$CONFIG_FILE"
 fi
 
 echo "🎉 Disk is partitioned, mounted, and ready for installation!"
