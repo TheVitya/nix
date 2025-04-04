@@ -49,8 +49,6 @@ mkfs.ext4 -L nixos "${disk}3"       # Root partition
 mount /dev/disk/by-label/nixos /mnt
 mkdir -p /mnt/boot
 mount /dev/disk/by-label/boot /mnt/boot
-mkdir -p /mnt/boot/efi
-mount /dev/disk/by-label/boot /mnt/boot/efi
 swapon "${disk}2"
 
 # 🛠️ Generate the initial NixOS config files in /mnt/etc/nixos
