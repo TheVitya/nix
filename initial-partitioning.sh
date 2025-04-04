@@ -6,9 +6,9 @@ disk=/dev/sda
 
 # ⚠️ Prompt the user to confirm before wiping the disk
 echo "⚠️  WARNING: This will wipe all data on $disk"
-read -r -p "Are you sure you want to continue? Type YES to proceed: " confirm < /dev/tty
+read -r -p "Are you sure you want to continue? Type 'yes' to proceed: " confirm < /dev/tty
 confirm="${confirm:-}"
-if [[ "$confirm" != "YES" ]]; then
+if [[ "$confirm" != "yes" ]]; then
   echo "Aborted."
   exit 1
 fi
