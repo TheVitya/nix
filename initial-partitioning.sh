@@ -66,25 +66,24 @@ SSH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpqUlEzSQKT9z7IM1QNZIogzQQecrFGkU
 
 # Inject SSH and user setup into configuration.nix (before the closing brace)
 echo '✅ Adding SSH configuration to configuration.nix'
-sed -i '/}/i \
-\
-# Enable SSH\n\
-services.openssh.enable = true;\n\
-services.openssh.passwordAuthentication = false;\n\
-\n\
-# Set up the user\n\
-users.users.viktor = {\n\
-  isNormalUser = true;\n\
-  description = "Viktor";\n\
-  extraGroups = [ "wheel" ]; # Optional: Add to the 'wheel' group to allow sudo\n\
-  shell = pkgs.zsh;\n\
-  openssh.authorizedKeys.keys = [\n\
-    "'"$SSH_KEY"'\n\
-  ];\n\
-};\n\
-\n\
-# Allow sudo without password (optional, be cautious)\n\
-security.sudo.wheelNeedsPassword = false;\n\
+sed -i '/}/i
+# Enable SSH
+services.openssh.enable = true;
+services.openssh.passwordAuthentication = false;
+
+# Set up the user
+users.users.viktor = {
+  isNormalUser = true;
+  description = "Viktor";
+  extraGroups = [ "wheel" ]; # Optional: Add to the 'wheel' group to allow sudo
+  shell = pkgs.zsh;
+  openssh.authorizedKeys.keys = [
+    "'"$SSH_KEY"'"
+  ];
+};
+
+# Allow sudo without password (optional, be cautious)
+security.sudo.wheelNeedsPassword = false;
 ' $CONFIG_FILE
 
 echo "🎉 Disk is partitioned, mounted, and ready for installation!"
