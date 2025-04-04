@@ -41,7 +41,7 @@ parted -s "$disk" \
 sleep 2
 
 # 🏗️ Format the new partitions with appropriate labels and filesystems
-mkfs.fat -F32 -n boot "${disk}1"     # EFI partition (vfat)
+mkfs.fat -F32 -n boot "${disk}1"    # EFI partition (vfat)
 mkswap -L swap "${disk}2"           # Swap partition
 mkfs.ext4 -L nixos "${disk}3"       # Root partition
 
@@ -58,7 +58,33 @@ nixos-generate-config --root /mnt
 CONFIG_FILE="/mnt/etc/nixos/configuration.nix"
 if ! grep -q 'boot.loader.grub.devices' "$CONFIG_FILE"; then
     echo '✅ Adding boot.loader.grub.devices to configuration.nix'
-    sed -i '/boot.loader.grub.enable = true;/a \  boot.loader.grub.devices = [ "/dev/sda1" ];' "$CONFIG_FILE"
+    sed -i '/boot.loader.grub.enable = true;/a \  boot.loader.grub.devices = [ "/dev/sda" ];' "$CONFIG_FILE"
 fi
+
+# Define your public SSH key here
+SSH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpqUlEzSQKT9z7IM1QNZIogzQQecrFGkUOxltJIfGqGoRrMTPqTkAidoLM9iw9Xsb7JAx2PUk0pVS4SXKO7cNJjv/Ty3eldqJKtHOd6rZiDnRvMunYzR7MjExg/BscR+VUyY0V+dDOC1ljJMAjP/CEXug21OEv9l1gNtxOx+NCJqDJNpkcCweoyBheVuzbOF6pwSWwEa3OYi7llc+g2/Xt89Sx4bfeRavN5lmVyJrR9PXmrE2hSLJP3XxVPhpIkiDNff4aODLZQsaXIKn7J8j2tGLtBN5cWACGrAkyM8RG2L799oUFudRN5LuJ+Cl13qXc7rTbKpnB5+nf9geUHkHr4ebVURLY5s/p03+5F1Ni8ZpSGcj7e1/ZDNrupPek3wFgfqYpq4GKjC90Q0LI/99Pgz9Ple/hy4XYXzrRXlpCD6p70WIY2A63oJkZvG6hAXd/l0jG5H5oZT3ELvMEyX1sKmcscGCFkGhv89XwvkYxXFtIKWWvuJsFseuP7ovpRk0= viktornagy@Viktors-MacBook-Pro.local"
+
+# Inject SSH and user setup into configuration.nix (before the closing brace)
+# We use 'sed' to add the configuration just before the last closing brace '}'.
+sed -i '/}/i \
+\
+# Enable SSH\n\
+services.openssh.enable = true;\n\
+services.openssh.passwordAuthentication = false;\n\
+\n\
+# Set up the user\n\
+users.users.viktor = {\n\
+  isNormalUser = true;\n\
+  description = "Viktor";\n\
+  extraGroups = [ "wheel" ]; # Optional: Add to the 'wheel' group to allow sudo\n\
+  shell = pkgs.zsh;\n\
+  openssh.authorizedKeys.keys = [\n\
+    "'"$SSH_KEY"'\n\
+  ];\n\
+};\n\
+\n\
+# Allow sudo without password (optional, be cautious)\n\
+security.sudo.wheelNeedsPassword = false;\n\
+' $CONFIG_FILE
 
 echo "🎉 Disk is partitioned, mounted, and ready for installation!"
