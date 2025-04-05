@@ -20,6 +20,7 @@ fi
 # 🔌 Unmount anything already mounted at /mnt and disable swap
 umount -R /mnt || true
 swapoff "${disk}2" || true
+swapoff "${disk}1" || true
 
 # 💣 Completely erase all partition data (MBR + GPT)
 sgdisk --zap-all "$disk"
@@ -54,6 +55,11 @@ if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
 
   swapon "${disk}2"
 
+  # 📦 Mount partitions for NixOS installation
+  mount /dev/disk/by-label/nixos /mnt
+  mkdir -p /mnt/boot
+  mount /dev/disk/by-label/boot /mnt/boot
+
 elif [[ "$arch" == "x86_64" ]]; then
   echo "📐 Creating MBR/BIOS partitions for x86_64..."
 
@@ -74,15 +80,13 @@ elif [[ "$arch" == "x86_64" ]]; then
 
   swapon "${disk}1"
 
+  # 📦 Mount partitions for NixOS installation
+  mount /dev/disk/by-label/nixos /mnt
+
 else
   echo "❌ Unsupported architecture: $arch"
   exit 1
 fi
-
-# 📦 Mount partitions for NixOS installation
-mount /dev/disk/by-label/nixos /mnt
-mkdir -p /mnt/boot
-mount /dev/disk/by-label/boot /mnt/boot
 
 # 🛠️ Generate the initial NixOS config files in /mnt/etc/nixos
 nixos-generate-config --root /mnt
