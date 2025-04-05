@@ -63,9 +63,13 @@ sed -i '/boot\.loader\.grub\.enable = true;/d' $CONFIG_FILE
 
 # Extend/override default `configuration.nix`:
 echo '
-  boot.loader.grub.enable = false;
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.enable = true;
+  boot.loader.grub.efiSupport = true;
+  boot.loader.grub.useOSProber = true;
+  boot.loader.grub.device = "/dev/sda";
+
+  boot.loader.systemd-boot.enable = false;
+  boot.loader.efi.canTouchEfiVariables = false;
 
   # Initial empty root password for easy login:
   users.users.root.initialHashedPassword = "";
