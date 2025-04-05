@@ -99,15 +99,20 @@ sed -i -E 's:^\}\s*$::g' $CONFIG_FILE
 sed -i '/boot\.loader\.grub\.enable = true;/d' $CONFIG_FILE
 
 # Extend/override default `configuration.nix`:
-echo '
-  boot.loader.grub.enable = true;
-  boot.loader.grub.efiSupport = true;
-  boot.loader.grub.useOSProber = true;
+if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
+    echo '
+  boot.loader.systemd-boot.enable = true;
+' >> $CONFIG_FILE
+elif [[ "$arch" == "x86_64" ]]; then
+    echo '
   boot.loader.grub.device = "/dev/sda";
+' >> $CONFIG_FILE
+else
+  echo "❌ Unsupported architecture: $arch"
+  exit 1
+fi
 
-  boot.loader.systemd-boot.enable = false;
-  boot.loader.efi.canTouchEfiVariables = false;
-
+echo '
   # Initial empty root password for easy login:
   users.users.root.initialHashedPassword = "";
   services.openssh.settings.PermitRootLogin = "prohibit-password";
