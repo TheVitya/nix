@@ -42,8 +42,8 @@ if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
     mklabel gpt \
     mkpart ESP fat32 1MiB 101MiB \
     set 1 esp on \
-    mkpart primary linux-swap 101MiB 613MiB \
-    mkpart primary ext4 613MiB 100%
+    mkpart swap linux-swap 101MiB 613MiB \
+    mkpart root ext4 613MiB 100%
 
   # 🕒 Wait briefly for the kernel to register new partitions
   sleep 2
@@ -58,7 +58,7 @@ if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
   # 📦 Mount partitions for NixOS installation
   mount /dev/disk/by-label/nixos /mnt
   mkdir -p /mnt/boot
-  mount /dev/disk/by-label/boot /mnt/boot
+  mount -o umask=077 /dev/disk/by-label/boot /mnt/boot
 
 elif [[ "$arch" == "x86_64" ]]; then
   echo "📐 Creating MBR/BIOS partitions for x86_64..."
@@ -69,7 +69,7 @@ elif [[ "$arch" == "x86_64" ]]; then
   parted -s "$disk" \
     mklabel msdos \
     mkpart primary linux-swap 1MiB 513MiB \
-    mkpart primary ext4 513MiB 100%
+    mkpart primary 513MiB 100%
 
   # 🕒 Wait briefly for the kernel to register new partitions
   sleep 2
