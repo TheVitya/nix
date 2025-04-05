@@ -4,7 +4,7 @@
 {pkgs, ...}: {
   imports = [
     # Include the results of the hardware scan.
-    ./disko-configuration.nix
+    ../common/x64-disko-configuration.nix
     ./hardware-configuration.nix
 
     ./networking.nix
@@ -15,7 +15,6 @@
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/vda";
   boot.loader.grub.useOSProber = true;
-
 
   # Set your time zone.
   time.timeZone = "Europe/Berlin";

@@ -130,5 +130,3 @@ echo "🎉 Disk is partitioned, mounted, and ready for installation!"
 echo "🎉 Installing..."
 
 nixos-install --no-root-passwd
-
-# poweroff
