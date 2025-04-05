@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# 🧠 Detect system architecture
+arch=$(uname -m)
+echo "🔍 Detected architecture: $arch"
+
 # 🧱 Set the target disk
 disk=/dev/sda
 
@@ -26,30 +30,59 @@ dd if=/dev/zero of="$disk" bs=1M count=10 conv=fsync
 
 echo "✅ Disk $disk has been wiped."
 
-# 📐 Create new GPT partition table and define three partitions:
-#   1. EFI System Partition (100MiB)
-#   2. Linux swap (512MiB)
-#   3. Root ext4 partition (remaining space)
-parted -s "$disk" \
-  mklabel gpt \
-  mkpart ESP fat32 1MiB 101MiB \
-  set 1 esp on \
-  mkpart primary linux-swap 101MiB 613MiB \
-  mkpart primary ext4 613MiB 100%
+if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
+  echo "📐 Creating GPT/UEFI partitions for ARM64..."
 
-# 🕒 Wait briefly for the kernel to register new partitions
-sleep 2
+  # 📐 Create new GPT partition table and define three partitions:
+  #   1. EFI System Partition (100MiB)
+  #   2. Linux swap (512MiB)
+  #   3. Root ext4 partition (remaining space)
+  parted -s "$disk" \
+    mklabel gpt \
+    mkpart ESP fat32 1MiB 101MiB \
+    set 1 esp on \
+    mkpart primary linux-swap 101MiB 613MiB \
+    mkpart primary ext4 613MiB 100%
 
-# 🏗️ Format the new partitions with appropriate labels and filesystems
-mkfs.fat -F32 -n boot "${disk}1"    # EFI partition (vfat)
-mkswap -L swap "${disk}2"           # Swap partition
-mkfs.ext4 -L nixos "${disk}3"       # Root partition
+  # 🕒 Wait briefly for the kernel to register new partitions
+  sleep 2
+
+  # 🏗️ Format the new partitions with appropriate labels and filesystems
+  mkfs.fat -F32 -n boot "${disk}1"    # EFI partition (vfat)
+  mkswap -L swap "${disk}2"           # Swap partition
+  mkfs.ext4 -L nixos "${disk}3"       # Root partition
+
+  swapon "${disk}2"
+
+elif [[ "$arch" == "x86_64" ]]; then
+  echo "📐 Creating MBR/BIOS partitions for x86_64..."
+
+  # 📐 Create new MBR/BIOS partition table and define three partitions:
+  #   1. Linux swap (512MiB)
+  #   2. Root ext4 partition (remaining space)
+  parted -s "$disk" \
+    mklabel msdos \
+    mkpart primary linux-swap 1MiB 513MiB \
+    mkpart primary ext4 513MiB 100%
+
+  # 🕒 Wait briefly for the kernel to register new partitions
+  sleep 2
+
+  # 🏗️ Format the new partitions with appropriate labels and filesystems
+  mkswap -L swap "${disk}1"           # Swap partition
+  mkfs.ext4 -L nixos "${disk}2"       # Root partition
+
+  swapon "${disk}1"
+
+else
+  echo "❌ Unsupported architecture: $arch"
+  exit 1
+fi
 
 # 📦 Mount partitions for NixOS installation
 mount /dev/disk/by-label/nixos /mnt
 mkdir -p /mnt/boot
 mount /dev/disk/by-label/boot /mnt/boot
-swapon "${disk}2"
 
 # 🛠️ Generate the initial NixOS config files in /mnt/etc/nixos
 nixos-generate-config --root /mnt
