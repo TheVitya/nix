@@ -3,7 +3,7 @@
 {
   services.openssh = {
     enable = true;
-    settings.PermitRootLogin = "no";
+    settings.PermitRootLogin = "yes";
     allowSFTP = true;
   };
 }

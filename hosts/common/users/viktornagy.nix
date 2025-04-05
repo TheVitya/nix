@@ -5,7 +5,8 @@
   ...
 }: {
   users.users.viktornagy = {
-    initialHashedPassword = "$y$j9T$IoChbWGYRh.rKfmm0G86X0$bYgsWqDRkvX.EBzJTX.Z0RsTlwspADpvEF3QErNyCMC";
+    # password = "vitya";
+    hashedPassword = "$6$WaQff5zXiX2lDWd4$FLVn3xYBDMr/4IOvDxPkRfrh9zHlo2KLcZFnlZGfiHc6CM7rWAQGD/F2E3fAKZCarIa/0Rcd6LWoHjwJRWlw10";
     isNormalUser = true;
     description = "viktornagy";
     extraGroups = [
