@@ -62,7 +62,8 @@ sed -i -E 's:^\}\s*$::g' $CONFIG_FILE
 
 # Extend/override default `configuration.nix`:
 echo '
-  boot.loader.grub.devices = [ "'"$disk"'" ];
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 
   # Initial empty root password for easy login:
   users.users.root.initialHashedPassword = "";
