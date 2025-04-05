@@ -85,4 +85,4 @@ echo "🎉 Installing..."
 
 nixos-install --no-root-passwd
 
-poweroff
+# poweroff
