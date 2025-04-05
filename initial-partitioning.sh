@@ -59,6 +59,7 @@ CONFIG_FILE="/mnt/etc/nixos/configuration.nix"
 
 # Delete trailing `}` from `configuration.nix` so that we can append more to it.
 sed -i -E 's:^\}\s*$::g' $CONFIG_FILE
+sed -i '/boot\.loader\.grub\.enable = true;/d' $CONFIG_FILE
 
 # Extend/override default `configuration.nix`:
 echo '
