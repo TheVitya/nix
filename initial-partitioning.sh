@@ -62,6 +62,7 @@ sed -i -E 's:^\}\s*$::g' $CONFIG_FILE
 
 # Extend/override default `configuration.nix`:
 echo '
+  boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
