@@ -4,11 +4,13 @@
 {pkgs, ...}: {
   imports = [
     # Include the results of the hardware scan.
-    ../common/x64-disko-configuration.nix
     ./hardware-configuration.nix
 
     ./networking.nix
     ./ssh.nix
+
+    ../../services/podman.nix
+    ../../services/traefik.nix
   ];
 
   # Bootloader.
