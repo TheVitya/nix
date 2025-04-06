@@ -19,6 +19,8 @@ fi
 
 # 🔌 Unmount anything already mounted at /mnt and disable swap
 umount -R /mnt || true
+swapoff "${disk}1" || true
+swapoff "${disk}2" || true
 
 # 💣 Completely erase all partition data (MBR + GPT)
 sgdisk --zap-all "$disk"
@@ -34,19 +36,24 @@ if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
 
   # 📐 Create new GPT partition table:
   #   1. EFI System Partition (100MiB)
+  #   2. Linux swap (512MiB)
   #   3. Root ext4 partition (remaining space)
   parted -s "$disk" \
     mklabel gpt \
     mkpart ESP fat32 1MiB 101MiB \
     set 1 esp on \
-    mkpart root ext4 101MiB 100%
+    mkpart swap linux-swap 101MiB 613MiB \
+    mkpart root ext4 613MiB 100%
 
   # 🕒 Wait briefly for the kernel to register new partitions
   sleep 2
 
   # 🏗️ Format the new partitions with appropriate labels and filesystems
   mkfs.fat -F32 -n boot "${disk}1"    # EFI partition (vfat)
-  mkfs.ext4 -L nixos "${disk}2"       # Root partition
+  mkswap -L swap "${disk}2"           # Swap partition
+  mkfs.ext4 -L nixos "${disk}3"       # Root partition
+
+  swapon "${disk}2"
 
   # 📦 Mount partitions for NixOS installation
   mount /dev/disk/by-label/nixos /mnt
@@ -57,16 +64,21 @@ elif [[ "$arch" == "x86_64" ]]; then
   echo "📐 Creating MBR/BIOS partitions for x86_64..."
 
   # 📐 Create new MBR/BIOS partition table:
-  #   1. Root ext4 partition
+  #   1. Linux swap (512MiB)
+  #   2. Root ext4 partition (remaining space)
   parted -s "$disk" \
     mklabel msdos \
-    mkpart primary 1MiB 100%
+    mkpart primary linux-swap 1MiB 513MiB \
+    mkpart primary 513MiB 100%
 
   # 🕒 Wait briefly for the kernel to register new partitions
   sleep 2
 
   # 🏗️ Format the new partitions with appropriate labels and filesystems
-  mkfs.ext4 -L nixos "${disk}1"       # Root partition
+  mkswap -L swap "${disk}1"           # Swap partition
+  mkfs.ext4 -L nixos "${disk}2"       # Root partition
+
+  swapon "${disk}1"
 
   # 📦 Mount partitions for NixOS installation
   mount /dev/disk/by-label/nixos /mnt
