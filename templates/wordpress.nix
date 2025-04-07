@@ -4,10 +4,10 @@ let
 
 ### Project Settings
 PROJECT_NAME = "wordpress";
-PROJECT_BASE_URL = "${PROJECT_NAME}.thecodingadventure.com";
+PROJECT_BASE_URL = "${PROJECT_NAME}.domain.com";
 
-WP_DIR = "/home/wordpress";
-WP_REPO = "https://github.com/TheVitya/wordpress.git";
+WP_DIR = "";
+WP_REPO = "";
 WORKDIR = "/var/www/html";
 ENV_FILE = ".env.prod";
 
@@ -76,14 +76,11 @@ in {
       PHP_SENDMAIL_PATH = "/usr/bin/msmtp -t";
       MSMTP_HOST = "opensmtpd";
       MSMTP_PORT = "25";
-
-      # PHP_MEMORY_LIMIT = "256M";
-      PHP_FPM_PM = "dynamic"; # or "ondemand" for very low traffic sites
-      PHP_FPM_PM_MAX_CHILDREN = "3";
-      PHP_FPM_PM_START_SERVERS = "2";
-      PHP_FPM_PM_MIN_SPARE_SERVERS = "1";
-      PHP_FPM_PM_MAX_SPARE_SERVERS = "2";
-      PHP_FPM_PM_MAX_REQUESTS = "500";
+      PHP_MEMORY_LIMIT = "256M";
+      PHP_FPM_PM_MAX_CHILDREN = "1";
+      PHP_FPM_PM_MAX_REQUESTS = "300";
+      PHP_FPM_PM_MAX_SPARE_SERVERS = "1";
+      PHP_FPM_PM_START_SERVERS = "1";
 
       DB_HOST = "${PROJECT_NAME}_db";
       DB_USER = DB_USER;
@@ -96,35 +93,4 @@ in {
     cmd = [ "sh" "-c" "composer install && php-fpm" ];
     dependsOn = [ "${PROJECT_NAME}_db" ];
   };
-
-  # systemd.services.update-wordpress = {
-  #   description = "Clone and update WordPress repo";
-  #   after = [ "network.target" ];
-  #   wantedBy = [ "multi-user.target" ];
-  #   serviceConfig = {
-  #     Type = "oneshot";
-  #     RemainAfterExit = true;
-  #     Environment = [
-  #       "WORDPRESS_DIRECTORY=${WORDPRESS_DIRECTORY}"
-  #       "WORDPRESS_REPO=${WORDPRESS_REPO}"
-  #     ];
-  #     ExecStart="/run/current-system/sw/bin/bash -c 'set -eu; GIT=\"/run/current-system/sw/bin/git\"; DIR=\"${WORDPRESS_DIRECTORY}\"; REPO=\"${WORDPRESS_REPO}\"; echo \"Setting safe.directory for Git...\"; \"$GIT\" config --system --add safe.directory \"$DIR\"; if [ -d \"$DIR/.git\" ]; then echo \"Pulling latest changes...\"; \"$GIT\" -C \"$DIR\" pull origin main; else echo \"Cloning from $REPO...\"; \"GIT\" clone \"REPO\" \"DIR\"; fi'";
-  #   };
-  # };
-
-  # # Run it every 15 minutes
-  # systemd.timers.update-wordpress-timer = {
-  #   description = "Periodic WordPress repo update";
-  #   wantedBy = [ "timers.target" ];
-  #   timerConfig = {
-  #     OnBootSec = "1min";
-  #     OnUnitActiveSec = "15min";
-  #     Unit = "update-wordpress.service";
-  #   };
-  # };
-
-  # systemd.services."docker-wordpress_mariadb" = {
-  #   after = [ "update-wordpress.service" ];
-  #   requires = [ "update-wordpress.service" ];
-  # };
 }

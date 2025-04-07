@@ -3,3 +3,5 @@
 *.tmp
 docker-compose.yml
 README.md
+init-server.sh
+templates
