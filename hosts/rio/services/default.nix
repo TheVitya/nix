@@ -6,5 +6,6 @@
     ./netdata.nix
     ./wordpress.nix
     ./mautic.nix
+    ./n8n.nix
   ];
 }
