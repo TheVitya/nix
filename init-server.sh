@@ -1,15 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-# 🧠 Detect system architecture
+# Detect system architecture
 arch=$(uname -m)
-echo "🔍 Detected architecture: $arch"
+echo "Detected architecture: $arch"
 
-# 🧱 Set the target disk
+# Set the target disk
 disk=/dev/sda
 
-# ⚠️ Prompt the user to confirm before wiping the disk
-echo "⚠️  WARNING: This will wipe all data on $disk"
+# Prompt the user to confirm before wiping the disk
+echo "WARNING: This will wipe all data on $disk"
 read -r -p "Are you sure you want to continue? Type 'yes' to proceed: " confirm < /dev/tty
 confirm="${confirm:-}"
 if [[ "$confirm" != "yes" ]]; then
@@ -17,24 +17,24 @@ if [[ "$confirm" != "yes" ]]; then
   exit 1
 fi
 
-# 🔌 Unmount anything already mounted at /mnt and disable swap
+# Unmount anything already mounted at /mnt and disable swap
 umount -R /mnt || true
 swapoff "${disk}1" || true
 swapoff "${disk}2" || true
 
-# 💣 Completely erase all partition data (MBR + GPT)
+# Completely erase all partition data (MBR + GPT)
 sgdisk --zap-all "$disk"
 wipefs -a "$disk"
 
-# 🧼 Zero out the first 10MiB for good measure
+# Zero out the first 10MiB for good measure
 dd if=/dev/zero of="$disk" bs=1M count=10 conv=fsync
 
-echo "✅ Disk $disk has been wiped."
+echo "Disk $disk has been wiped."
 
 if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
-  echo "📐 Creating GPT/UEFI partitions for ARM64..."
+  echo "Creating GPT/UEFI partitions for ARM64..."
 
-  # 📐 Create new GPT partition table:
+  # Create new GPT partition table:
   #   1. EFI System Partition (100MiB)
   #   2. Linux swap (512MiB)
   #   3. Root ext4 partition (remaining space)
@@ -45,25 +45,25 @@ if [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
     mkpart swap linux-swap 101MiB 613MiB \
     mkpart root ext4 613MiB 100%
 
-  # 🕒 Wait briefly for the kernel to register new partitions
+  # Wait briefly for the kernel to register new partitions
   sleep 2
 
-  # 🏗️ Format the new partitions with appropriate labels and filesystems
+  # Format the new partitions with appropriate labels and filesystems
   mkfs.fat -F32 -n boot "${disk}1"    # EFI partition (vfat)
   mkswap -L swap "${disk}2"           # Swap partition
   mkfs.ext4 -L nixos "${disk}3"       # Root partition
 
   swapon "${disk}2"
 
-  # 📦 Mount partitions for NixOS installation
+  # Mount partitions for NixOS installation
   mount /dev/disk/by-label/nixos /mnt
   mkdir -p /mnt/boot
   mount -o umask=077 /dev/disk/by-label/boot /mnt/boot
 
 elif [[ "$arch" == "x86_64" ]]; then
-  echo "📐 Creating MBR/BIOS partitions for x86_64..."
+  echo "Creating MBR/BIOS partitions for x86_64..."
 
-  # 📐 Create new MBR/BIOS partition table:
+  # Create new MBR/BIOS partition table:
   #   1. Linux swap (512MiB)
   #   2. Root ext4 partition (remaining space)
   parted -s "$disk" \
@@ -71,27 +71,27 @@ elif [[ "$arch" == "x86_64" ]]; then
     mkpart primary linux-swap 1MiB 513MiB \
     mkpart primary 513MiB 100%
 
-  # 🕒 Wait briefly for the kernel to register new partitions
+  # Wait briefly for the kernel to register new partitions
   sleep 2
 
-  # 🏗️ Format the new partitions with appropriate labels and filesystems
+  # Format the new partitions with appropriate labels and filesystems
   mkswap -L swap "${disk}1"           # Swap partition
   mkfs.ext4 -L nixos "${disk}2"       # Root partition
 
   swapon "${disk}1"
 
-  # 📦 Mount partitions for NixOS installation
+  # Mount partitions for NixOS installation
   mount /dev/disk/by-label/nixos /mnt
 
 else
-  echo "❌ Unsupported architecture: $arch"
+  echo "Unsupported architecture: $arch"
   exit 1
 fi
 
-# 🛠️ Generate the initial NixOS config files in /mnt/etc/nixos
+# Generate the initial NixOS config files in /mnt/etc/nixos
 nixos-generate-config --root /mnt
 
-# 📝 Patch the config to make the system bootable by specifying the GRUB device
+# Patch the config to make the system bootable by specifying the GRUB device
 CONFIG_FILE="/mnt/etc/nixos/configuration.nix"
 
 # Delete trailing `}` from `configuration.nix` so that we can append more to it.
@@ -108,7 +108,7 @@ elif [[ "$arch" == "x86_64" ]]; then
   boot.loader.grub.device = "/dev/sda";
 ' >> $CONFIG_FILE
 else
-  echo "❌ Unsupported architecture: $arch"
+  echo "Unsupported architecture: $arch"
   exit 1
 fi
 
@@ -126,7 +126,7 @@ echo '
 }
 ' >> $CONFIG_FILE
 
-echo "🎉 Disk is partitioned, mounted, and ready for installation!"
-echo "🎉 Installing..."
+echo "Disk is partitioned, mounted, and ready for installation!"
+echo "Installing..."
 
 nixos-install --no-root-passwd

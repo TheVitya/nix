@@ -1,4 +1,5 @@
 # Common configuration for all hosts
+
 {
   lib,
   inputs,
@@ -6,56 +7,80 @@
   ...
 }: {
   imports = [
+    # Custom user configs
     ./users
+
+    # Enables Home Manager as a NixOS module
     inputs.home-manager.nixosModules.home-manager
   ];
 
   home-manager = {
+    # Makes `home.packages` available system-wide via user profile
     useUserPackages = true;
-    extraSpecialArgs = {inherit inputs outputs;};
+    # Pass flake inputs/outputs into modules for easier access
+    # You can use `inputs.<name>` and `outputs.<name>` directly in user configs
+    extraSpecialArgs = { inherit inputs outputs; };
   };
 
   nixpkgs = {
-    # You can add overlays here
+    # Add your overlays here to customize or extend packages
     overlays = [
-      # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.stable-packages
+      # From your flake's own overlays
+      outputs.overlays.additions          # New packages
+      outputs.overlays.modifications      # Modifications to existing packages
+      outputs.overlays.stable-packages    # Pinned stable versions of packages
 
-      # You can also add overlays exported from other flakes:
+      # Add overlays from external flakes
       # neovim-nightly-overlay.overlays.default
 
-      # Or define it inline, for example:
+      # You can also define one inline:
       # (final: prev: {
       #   hi = final.hello.overrideAttrs (oldAttrs: {
       #     patches = [ ./change-hello-to-hi.patch ];
       #   });
       # })
     ];
-    # Configure your nixpkgs instance
+
+    # Configuration of nixpkgs
     config = {
-      # Disable if you don't want unfree packages
+      # Allow non-free software like NVIDIA drivers, VSCode, etc.
       allowUnfree = true;
+      # Workaround for https://github.com/nix-community/home-manager/issues/2942
+      allowUnfreePredicate = _: true;
     };
   };
 
   nix = {
+    package = lib.mkDefault pkgs.nix;
     settings = {
+      # Enables modern features: `nix flake` and `nix profile`
       experimental-features = "nix-command flakes";
+
+      # Users allowed to perform privileged Nix actions (e.g., build/store access)
       trusted-users = [
         "root"
         "viktornagy"
-      ]; # Set users that are allowed to use the flake command
+      ];
     };
+
+    # Garbage collection: clean up unused packages
     gc = {
+      # Runs GC periodically
       automatic = true;
+      # Deletes packages unused for 30+ days
+      # Use case: Saves disk space without breaking current setups
       options = "--delete-older-than 30d";
     };
+
+    # Deduplicates Nix store to save space
     optimise.automatic = true;
-    registry =
-      (lib.mapAttrs (_: flake: {inherit flake;}))
+
+    # Automatically create a registry mapping flake inputs (makes `nix run <name>` work)
+    registry = (lib.mapAttrs (_: flake: { inherit flake; }))
       ((lib.filterAttrs (_: lib.isType "flake")) inputs);
-    nixPath = ["/etc/nix"];
+
+    # Fallback path for legacy nix commands
+    # Compatibility with older tools or scripts using `NIX_PATH`
+    nixPath = [ "/etc/nix" ];
   };
 }

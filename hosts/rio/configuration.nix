@@ -1,25 +1,40 @@
+# Configuration for the host
+
 { pkgs, ... }:
 
 {
   imports = [
+    # Auto-generated file defining detected hardware (disks, GPU, etc.)
     ./hardware-configuration.nix
 
+    # Network config (like hostname, firewall, static IPs)
     ./networking.nix
+
+    # SSH server setup (OpenSSH, root login, SFTP, etc.)
     ./ssh.nix
 
+    # Additional services (this can be a directory with multiple service modules)
     ./services
   ];
 
-  # Bootloader.
+  # Bootloader configuration
+  # Enables GRUB (the default bootloader)
   boot.loader.grub.enable = true;
+  # Installs GRUB on the primary disk (adjust if using EFI or different disk layout)
+  # Needed to boot the system — `/dev/sda` is common for BIOS-based setups
   boot.loader.grub.device = "/dev/sda";
 
-  # Set your time zone.
+  # Time zone setting
+  # Sets the system time zone
+  # Ensures logs, clocks, cron jobs use your local time
   time.timeZone = "Europe/Berlin";
 
-  # Select internationalisation properties.
+  # Language & regional settings
+  # Default system language/locale
   i18n.defaultLocale = "en_US.UTF-8";
 
+  # Region-specific formats for date, currency, etc.
+  # Keep system language in English, but follow German formats (e.g., € currency, metric units)
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "de_DE.UTF-8";
     LC_IDENTIFICATION = "de_DE.UTF-8";
@@ -32,33 +47,20 @@
     LC_TIME = "de_DE.UTF-8";
   };
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
+  # Packages installed globally (for all users)
+  # Handy command-line tools available on all terminals and shells
   environment.systemPackages = with pkgs; [
-    neovim
-    git
-    htop
+    neovim  # Fast, modern text editor (Vim alternative)
+    git     # Version control system
+    htop    # Interactive system monitor
   ];
 
-  # List services that you want to enable:
+  # Program-specific configuration
   programs = {
-    git.enable = true;
+    git.enable = true;  # Enables system-wide Git configuration (like `/etc/gitconfig`)
   };
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.11"; # Did you read the comment?
+  # This sets the baseline for system configuration and upgrade compatibility
+  # Prevents breaking changes to system behavior (like default file paths or service versions)
+  system.stateVersion = "24.11"; # 📌 Keep this pinned to when you first installed the system
 }

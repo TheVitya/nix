@@ -60,4 +60,15 @@ in {
     };
     volumes = [ "${MAUTIC_DIR}/data:/var/lib/mysql" ];
   };
+
+  systemd.services."update-${PROJECT_NAME}" = {
+    description = "Create ${PROJECT_NAME} folder structure";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "/run/current-system/sw/bin/bash -eu -c 'mkdir -p \"${MAUTIC_DIR}/config\" \"${MAUTIC_DIR}/logs\" \"${MAUTIC_DIR}/media/files\" \"${MAUTIC_DIR}/data\"'";
+    };
+  };
 }

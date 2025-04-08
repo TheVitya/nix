@@ -37,3 +37,6 @@ nixos-rebuild switch
 ## Traefik
 
 create folder /etc/nixos/traefik-dynamic
+
+## Agenix
+

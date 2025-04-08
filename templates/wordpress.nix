@@ -93,4 +93,31 @@ in {
     cmd = [ "sh" "-c" "composer install && php-fpm" ];
     dependsOn = [ "${PROJECT_NAME}_db" ];
   };
+
+  systemd.services."update-${PROJECT_NAME}" = {
+    description = "Clone and update ${PROJECT_NAME} repo";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    environment = { "HOME" = "/root"; };
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "/run/current-system/sw/bin/bash -eu -c 'GIT=/run/current-system/sw/bin/git; echo Setting safe.directory for Git...; $GIT config --global --add safe.directory \"${WP_DIR}\"; if [ -d \"${WP_DIR}/.git\" ]; then echo Pulling latest changes...; $GIT -C \"${WP_DIR}\" pull origin main; else echo Cloning from ${WP_REPO}...; $GIT clone ${WP_REPO} \"${WP_DIR}\"; fi'";
+    };
+  };
+
+  systemd.timers."update-${PROJECT_NAME}-timer" = {
+    description = "Periodic ${PROJECT_NAME} repo update";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "1min";
+      OnUnitActiveSec = "15min";
+      Unit = "update-${PROJECT_NAME}.service";
+    };
+  };
+
+  systemd.services."docker-${PROJECT_NAME}_db" = {
+    after = [ "update-${PROJECT_NAME}.service" ];
+    requires = [ "update-${PROJECT_NAME}.service" ];
+  };
 }

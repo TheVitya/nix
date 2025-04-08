@@ -97,34 +97,30 @@ in {
     dependsOn = [ "${PROJECT_NAME}_db" ];
   };
 
-  # systemd.services.update-wordpress = {
-  #   description = "Clone and update WordPress repo";
-  #   after = [ "network.target" ];
-  #   wantedBy = [ "multi-user.target" ];
-  #   serviceConfig = {
-  #     Type = "oneshot";
-  #     RemainAfterExit = true;
-  #     Environment = [
-  #       "WORDPRESS_DIRECTORY=${WORDPRESS_DIRECTORY}"
-  #       "WORDPRESS_REPO=${WORDPRESS_REPO}"
-  #     ];
-  #     ExecStart="/run/current-system/sw/bin/bash -c 'set -eu; GIT=\"/run/current-system/sw/bin/git\"; DIR=\"${WORDPRESS_DIRECTORY}\"; REPO=\"${WORDPRESS_REPO}\"; echo \"Setting safe.directory for Git...\"; \"$GIT\" config --system --add safe.directory \"$DIR\"; if [ -d \"$DIR/.git\" ]; then echo \"Pulling latest changes...\"; \"$GIT\" -C \"$DIR\" pull origin main; else echo \"Cloning from $REPO...\"; \"GIT\" clone \"REPO\" \"DIR\"; fi'";
-  #   };
-  # };
+  systemd.services."update-${PROJECT_NAME}" = {
+    description = "Clone and update ${PROJECT_NAME} repo";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    environment = { "HOME" = "/root"; };
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "/run/current-system/sw/bin/bash -eu -c 'GIT=/run/current-system/sw/bin/git; echo Setting safe.directory for Git...; $GIT config --global --add safe.directory \"${WP_DIR}\"; if [ -d \"${WP_DIR}/.git\" ]; then echo Pulling latest changes...; $GIT -C \"${WP_DIR}\" pull origin main; else echo Cloning from ${WP_REPO}...; $GIT clone ${WP_REPO} \"${WP_DIR}\"; fi'";
+    };
+  };
 
-  # # Run it every 15 minutes
-  # systemd.timers.update-wordpress-timer = {
-  #   description = "Periodic WordPress repo update";
-  #   wantedBy = [ "timers.target" ];
-  #   timerConfig = {
-  #     OnBootSec = "1min";
-  #     OnUnitActiveSec = "15min";
-  #     Unit = "update-wordpress.service";
-  #   };
-  # };
+  systemd.timers."update-${PROJECT_NAME}-timer" = {
+    description = "Periodic ${PROJECT_NAME} repo update";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "1min";
+      OnUnitActiveSec = "15min";
+      Unit = "update-${PROJECT_NAME}.service";
+    };
+  };
 
-  # systemd.services."docker-wordpress_mariadb" = {
-  #   after = [ "update-wordpress.service" ];
-  #   requires = [ "update-wordpress.service" ];
-  # };
+  systemd.services."docker-${PROJECT_NAME}_db" = {
+    after = [ "update-${PROJECT_NAME}.service" ];
+    requires = [ "update-${PROJECT_NAME}.service" ];
+  };
 }
