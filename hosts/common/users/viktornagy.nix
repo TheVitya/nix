@@ -3,7 +3,12 @@
   pkgs,
   inputs,
   ...
-}: {
+}:
+
+# Browse all available user options here:
+# https://search.nixos.org/options?channel=24.11&query=users.users
+
+{
   users.users.viktornagy = {
     # Password configuration
     # Plaintext password — avoid in production!

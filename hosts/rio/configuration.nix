@@ -1,6 +1,7 @@
-# Configuration for the host
-
 { pkgs, ... }:
+
+# Browse all available options here:
+# https://search.nixos.org/options?channel=24.11
 
 {
   imports = [

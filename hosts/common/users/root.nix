@@ -3,7 +3,12 @@
   pkgs,
   inputs,
   ...
-}: {
+}:
+
+# Browse all available user options here:
+# https://search.nixos.org/options?channel=24.11&query=users.users
+
+{
   users.users.root = {
     # Public SSH key to allow login without a password (useful for headless systems)
     # Enables passwordless SSH login for this user
