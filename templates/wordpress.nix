@@ -102,7 +102,7 @@ in {
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "/run/current-system/sw/bin/bash -eu -c 'GIT=/run/current-system/sw/bin/git; echo Setting safe.directory for Git...; $GIT config --global --add safe.directory \"${WP_DIR}\"; if [ -d \"${WP_DIR}/.git\" ]; then echo Pulling latest changes...; $GIT -C \"${WP_DIR}\" pull origin main; else echo Cloning from ${WP_REPO}...; $GIT clone ${WP_REPO} \"${WP_DIR}\"; fi'";
+      ExecStart = "/run/current-system/sw/bin/bash -eu -c 'mkdir -p ${WP_DIR}/data; GIT=/run/current-system/sw/bin/git; echo Setting safe.directory for Git...; $GIT config --global --add safe.directory \"${WP_DIR}\"; if [ -d \"${WP_DIR}/.git\" ]; then echo Pulling latest changes...; $GIT -C \"${WP_DIR}\" pull origin main; else echo Cloning from ${WP_REPO}...; $GIT clone ${WP_REPO} \"${WP_DIR}\"; fi'";
     };
   };
 

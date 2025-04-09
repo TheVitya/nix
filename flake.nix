@@ -22,7 +22,7 @@
 
     # Your personal dotfiles repo
     dotfiles = {
-      url = "git+https://github.com/TheVitya/.dotfiles.git";
+      url = "github:TheVitya/.dotfiles/home";
       # Not a flake, just a plain git repo
       # Allows you to pull in personal config files (e.g. `.zshrc`, `.vimrc`) without needing to flake-ify them
       flake = false;

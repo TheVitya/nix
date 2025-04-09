@@ -8,7 +8,6 @@ services:
     tty: true
     volumes:
       - .:/workspace
-      - ~/.ssh:/root/.ssh
     working_dir: /workspace
     environment:
       - NIX_CONFIG=experimental-features = nix-command flakes
