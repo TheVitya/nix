@@ -9,7 +9,7 @@ PROJECT_BASE_URL = "${PROJECT_NAME}.thecodingadventure.com";
 WP_DIR = "/home/wordpress";
 WP_REPO = "https://github.com/TheVitya/wordpress.git";
 WORKDIR = "/var/www/html";
-ENV_FILE = ".env.prod";
+ENV_FILE = ".env";
 
 DB_NAME = "wordpress";
 DB_USER = "wordpress";
@@ -70,6 +70,9 @@ in {
     autoStart = true;
     environment = {
       PHP_FPM_CLEAR_ENV = "no";
+
+      WP_HOME = PROJECT_BASE_URL;
+      WP_SITE_URL = PROJECT_BASE_URL;
       ENV_FILE = ENV_FILE;
 
       PHP_MAIL_MIXED_LF_AND_CRLF = "On";

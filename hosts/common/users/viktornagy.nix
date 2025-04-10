@@ -37,6 +37,7 @@
 
     # Installs Home Manager's default CLI tool (`home-manager`) into the user environment
     packages = [
+      pkgs.gcc
       inputs.home-manager.packages.${pkgs.system}.default
     ];
   };

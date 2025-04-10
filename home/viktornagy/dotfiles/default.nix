@@ -8,8 +8,10 @@
 
   ];
 
-  # home.file.".config/nvim" = {
-  #   source = "${inputs.dotfiles}/.config/nvim";
-  #   recursive = true;
-  # };
+  home.file.".config/nvim" = {
+    source = "${inputs.dotfiles}/.config/nvim";
+    recursive = true;
+    target = ".config/nvim";
+    force = true;
+  };
 }
