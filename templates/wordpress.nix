@@ -71,8 +71,8 @@ in {
     environment = {
       PHP_FPM_CLEAR_ENV = "no";
 
-      WP_HOME = PROJECT_BASE_URL;
-      WP_SITE_URL = PROJECT_BASE_URL;
+      WP_HOME = "https://${PROJECT_BASE_URL}";
+      WP_SITE_URL = "https://${PROJECT_BASE_URL}";
       ENV_FILE = ENV_FILE;
 
       PHP_MAIL_MIXED_LF_AND_CRLF = "On";

@@ -37,7 +37,10 @@
 
     # Installs Home Manager's default CLI tool (`home-manager`) into the user environment
     packages = [
-      pkgs.gcc
+      pkgs.gcc     # C++ compiler
+      pkgs.ripgrep # Fast searcher
+      pkgs.xclip   # Copy to clipboard
+
       inputs.home-manager.packages.${pkgs.system}.default
     ];
   };

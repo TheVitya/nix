@@ -35,7 +35,6 @@
     # '')
 
     nerd-fonts.hack
-    # gcc
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
@@ -74,27 +73,4 @@
 
   # Let Home Manager and Neovim install and manage itself.
   programs.home-manager.enable = true;
-  # programs.neovim = {
-  #   enable = true;
-  #   plugins = with pkgs.vimPlugins; [
-  #     packer-nvim
-  #   ];
-  # };
-
-  # Run packer sync with a service on every login
-  # systemd.user.services.packerSyncOnLogin = {
-  #   Unit = {
-  #     Description = "Run PackerSync at login";
-  #     After = [ "graphical-session.target" ];
-  #   };
-  #
-  #   Service = {
-  #     ExecStart = "${pkgs.neovim}/bin/nvim +PackerSync +qa";
-  #     Restart = "on-failure";
-  #   };
-  #
-  #   Install = {
-  #     WantedBy = [ "default.target" ];
-  #   };
-  # };
 }
