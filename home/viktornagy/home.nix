@@ -73,4 +73,10 @@
 
   # Let Home Manager and Neovim install and manage itself.
   programs.home-manager.enable = true;
+
+  programs.git = {
+    enable = true;
+    userName = "Viktor Nagy";
+    userEmail = "vktrnagy64@gmail.com";
+  };
 }

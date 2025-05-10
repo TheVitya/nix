@@ -44,6 +44,8 @@ in {
       "traefik.http.routers.${PROJECT_NAME}.rule" = "Host(`${PROJECT_BASE_URL}`)";
       "traefik.http.routers.${PROJECT_NAME}.entrypoints" = "websecure";
       "traefik.http.routers.${PROJECT_NAME}.tls.certresolver" = "resolver";
+      "traefik.http.routers.${PROJECT_NAME}.middlewares" = "basic-auth";
+      "traefik.http.middlewares.basic-auth.basicAuth.users" = "viktornagy:$2y$05$xSKePZRNVrtzakPaymbS/.JGsdM.smlY8ebovK6s6rE2a/HM5rkWu";
     };
   };
 

@@ -20,6 +20,7 @@ DB_ROOT_PASSWORD = "password";
 MARIADB_TAG = "docker.io/wodby/mariadb:11.4";
 WORDPRESS_TAG = "docker.io/wodby/wordpress-php:8.3";
 NGINX_TAG = "docker.io/wodby/nginx:1.25-5.33.4";
+REDIS_TAG = "docker.io/wodby/redis:latest";
 
 in {
   services.traefik.staticConfigOptions.networks."${PROJECT_NAME}_nginx" = {
@@ -49,6 +50,11 @@ in {
       "${WP_DIR}/sitemap.conf:/etc/nginx/sitemap.conf"
     ];
     dependsOn = [ "${PROJECT_NAME}_php" ];
+  };
+
+  virtualisation.oci-containers.containers."${PROJECT_NAME}_redis" = {
+    image = REDIS_TAG;
+    autoStart = true;
   };
 
   virtualisation.oci-containers.containers."${PROJECT_NAME}_db" = {
@@ -88,6 +94,9 @@ in {
       PHP_FPM_PM_MAX_SPARE_SERVERS = "2";
       PHP_FPM_PM_MAX_REQUESTS = "500";
 
+      # REDIS
+      WP_REDIS_HOST = "${PROJECT_NAME}_redis";
+
       DB_HOST = "${PROJECT_NAME}_db";
       DB_USER = DB_USER;
       DB_PASSWORD = DB_PASSWORD;
@@ -100,30 +109,30 @@ in {
     dependsOn = [ "${PROJECT_NAME}_db" ];
   };
 
-  systemd.services."update-${PROJECT_NAME}" = {
-    description = "Clone and update ${PROJECT_NAME} repo";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    environment = { "HOME" = "/root"; };
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "/run/current-system/sw/bin/bash -eu -c 'mkdir -p ${WP_DIR}/data; GIT=/run/current-system/sw/bin/git; echo Setting safe.directory for Git...; $GIT config --global --add safe.directory \"${WP_DIR}\"; if [ -d \"${WP_DIR}/.git\" ]; then echo Pulling latest changes...; $GIT -C \"${WP_DIR}\" pull origin main; else echo Cloning from ${WP_REPO}...; $GIT clone ${WP_REPO} \"${WP_DIR}\"; fi'";
-    };
-  };
-
-  systemd.timers."update-${PROJECT_NAME}-timer" = {
-    description = "Periodic ${PROJECT_NAME} repo update";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "1min";
-      OnUnitActiveSec = "15min";
-      Unit = "update-${PROJECT_NAME}.service";
-    };
-  };
-
-  systemd.services."docker-${PROJECT_NAME}_db" = {
-    after = [ "update-${PROJECT_NAME}.service" ];
-    requires = [ "update-${PROJECT_NAME}.service" ];
-  };
+  # systemd.services."update-${PROJECT_NAME}" = {
+  #   description = "Clone and update ${PROJECT_NAME} repo";
+  #   after = [ "network.target" ];
+  #   wantedBy = [ "multi-user.target" ];
+  #   environment = { "HOME" = "/root"; };
+  #   serviceConfig = {
+  #     Type = "oneshot";
+  #     RemainAfterExit = true;
+  #     ExecStart = "/run/current-system/sw/bin/bash -eu -c 'mkdir -p ${WP_DIR}/data; GIT=/run/current-system/sw/bin/git; echo Setting safe.directory for Git...; $GIT config --global --add safe.directory \"${WP_DIR}\"; if [ -d \"${WP_DIR}/.git\" ]; then echo Pulling latest changes...; $GIT -C \"${WP_DIR}\" pull origin main; else echo Cloning from ${WP_REPO}...; $GIT clone ${WP_REPO} \"${WP_DIR}\"; fi'";
+  #   };
+  # };
+  #
+  # systemd.timers."update-${PROJECT_NAME}-timer" = {
+  #   description = "Periodic ${PROJECT_NAME} repo update";
+  #   wantedBy = [ "timers.target" ];
+  #   timerConfig = {
+  #     OnBootSec = "1min";
+  #     OnUnitActiveSec = "15min";
+  #     Unit = "update-${PROJECT_NAME}.service";
+  #   };
+  # };
+  #
+  # systemd.services."docker-${PROJECT_NAME}_db" = {
+  #   after = [ "update-${PROJECT_NAME}.service" ];
+  #   requires = [ "update-${PROJECT_NAME}.service" ];
+  # };
 }

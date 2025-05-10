@@ -19,6 +19,9 @@
     # Stable nixpkgs version, e.g., for more reliable builds
     # Use this when you want reproducibility, stability, or when deploying to production
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
+    
+    # Managing secrets for hosts and users
+    agenix.url = "github:ryantm/agenix";
 
     # Your personal dotfiles repo
     dotfiles = {
@@ -30,7 +33,7 @@
   };
 
   # Output definitions (what this flake provides)
-  outputs = { self, dotfiles, home-manager, nixpkgs, ... } @ inputs: let
+  outputs = { self, dotfiles, home-manager, agenix, nixpkgs, ... } @ inputs: let
     # Reuse `outputs` inside the config
     inherit (self) outputs;
 
@@ -68,6 +71,7 @@
         # List of configuration modules for this host
         modules = [
           ./hosts/rio
+          agenix.nixosModules.default
         ];
       };
     };

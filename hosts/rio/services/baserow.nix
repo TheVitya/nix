@@ -3,34 +3,30 @@
 let
 
 ### Project Settings
-PROJECT_NAME = "n8n";
+PROJECT_NAME = "baserow";
 PROJECT_BASE_URL = "${PROJECT_NAME}.thecodingadventure.com";
 
-DATA_DIR = "/home/n8n";
+DATA_DIR = "/home/baserow";
 
 ### Container Images
-N8N_TAG = "docker.n8n.io/n8nio/n8n";
+BASEROW_TAG = "docker.io/baserow/baserow:latest";
 
 in {
   virtualisation.oci-containers.containers."${PROJECT_NAME}" = {
-    image = N8N_TAG;
+    image = BASEROW_TAG;
     autoStart = true;
-    ports = [ "5678:5678" ];
     environment = {
-      N8N_HOST = PROJECT_BASE_URL;
-      WEBHOOK_URL	= "https://${PROJECT_BASE_URL}";
+      BASEROW_PUBLIC_URL = "https://${PROJECT_BASE_URL}";
     };
     labels = {
       "traefik.enable" = "true";
-      "traefik.http.services.${PROJECT_NAME}.loadbalancer.server.port" = "5678";
       "traefik.http.routers.${PROJECT_NAME}.rule" = "Host(`${PROJECT_BASE_URL}`)";
       "traefik.http.routers.${PROJECT_NAME}.entrypoints" = "websecure";
       "traefik.http.routers.${PROJECT_NAME}.tls.certresolver" = "resolver";
     };
     volumes = [
-      "${DATA_DIR}:/home/node/.n8n"
+      "${DATA_DIR}:/baserow/data"
     ];
-    user = "node:node";
   };
 
   services.traefik.staticConfigOptions.networks."${PROJECT_NAME}" = {
