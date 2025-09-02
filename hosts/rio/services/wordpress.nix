@@ -82,9 +82,6 @@ in {
       ENV_FILE = ENV_FILE;
 
       PHP_MAIL_MIXED_LF_AND_CRLF = "On";
-      PHP_SENDMAIL_PATH = "/usr/bin/msmtp -t";
-      MSMTP_HOST = "opensmtpd";
-      MSMTP_PORT = "25";
 
       # PHP_MEMORY_LIMIT = "256M";
       PHP_FPM_PM = "dynamic"; # or "ondemand" for very low traffic sites
